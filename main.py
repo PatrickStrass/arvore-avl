@@ -1,55 +1,101 @@
 class Arvore_AVL:
     def __init__(self):
-        self.nodos = []
+        self.raiz = None
+
+    #def __repr__(self):
 
     def inserir(self, chave):
-        self.nodos.append(Nodo(chave))
+        if self.raiz == None:
+            self.raiz = Nodo(chave)
+
+        else:
+            self._inserir(chave, self.raiz)
+
+    def _inserir(self, chave, nodo_atual):
+        if chave < nodo_atual.chave:
+            if nodo_atual.filho_esquerda == None:
+                nodo_atual.filho_esquerda = Nodo(chave)
+                nodo.atual.filho_esquerda.pai = nodo_atual
+
+            else:
+                self._insert(chave, nodo_atual.filho_esquerda)
+
+        elif chave > nodo_atual:
+            if nodo_atual.filho_direita == None:
+                
+
+        """
+        novaChave = Nodo(chave)
+
+        self.nodos.append(novaChave)
+
+        if (self.nodos.len != 0):
+            novaChave.pai = self.nodos.index(len - 1)
+        """
+
+    def deletar(self, chave):
+        self.nodos.remove(chave);  
 
     def visualizar(self):
         for node in self.nodos:
-            print(node.get_chave())
+            print(node.chave)
 
 class Nodo:
-    def __init__(self, chave, nodo_maior=None, nodo_menor=None):
+    def __init__(self, chave):
         self.chave = chave
-        self.nodo_maior = None
-        self.nodo_menor = None
+        self.filho_esquerda = None
+        self.filho_direita = None
+        self.pai = None
+        self.altura = 0
 
-    #def __repr__(self):
-     #   return '%s -> %s' % (self.dado, self.proximo)
+    def fator_balanceamento():
+        altura_esq, altura_dir = 0
+
+        fator_balanceamento(self.Nodo.nodo.menor)
+
+        return 0
 
 arvore_avl = Arvore_AVL() 
 
-opcao = int(input("Menu\n(1) Inserir número\n(2) Deletar número\n(3) Visualizar árvore\n(4) Sair\nDigite uma opção: "))
+opcao = int(input("Menu\n(1) Inserir chave\n(2) Deletar chave\n(3) Visualizar árvore\n(4) Sair\nDigite uma opção: "))
 
-while(opcao != 4):
-    if(opcao == 1):
-        numeroInserir = int(input("Número que deseja inserir: "))
-        arvore_avl.inserir(numeroInserir)
+while (True):
+    if opcao == 1:
+        chaveInserir = input("Chave que deseja inserir: ")
 
-    elif(opcao == 2):
-        print("Deletando...")
+        if chaveInserir.isdigit():
+            chaveExiste = False
 
-    elif(opcao == 3):
+            for nodo in arvore_avl.nodos:
+                if nodo.chave == chaveInserir:
+                    chaveExiste = True
+
+            if chaveExiste:
+                print("Chave já existe!")
+
+            else:
+                arvore_avl.inserir(chaveInserir)
+
+        else:
+            print("A chave deve ser do tipo inteiro!")
+
+    elif opcao == 2:
+        chaveDeletar = input("Chave que deseja deletar: ")
+
+        if chaveDeletar.isdigit():
+            if arvore_avl.nodos.count(chaveDeletar):   
+                arvore_avl.deletar()
+            
+            else:
+                print("Chave não existe!")
+
+        else: 
+            print("A chave deve ser do tipo inteiro!")
+
+    elif opcao == 3:
         print(arvore_avl.visualizar())
 
     else:
         break
 
-    opcao = int(input("\nMenu\n(1) Inserir número\n(2) Deletar número\n(3) Visualizar árvore\n(4) Sair\nDigite uma opção: "))
-
-"""
-switch(opcao):
-        case(1):
-            numeroInserir = input(int("Número que deseja inserir: "))
-            arvore_avl.inserir(numeroInserir)
-            break
-        
-        case(2):
-            print("Deletando...")
-            break
-
-        case(3):
-            print("Opção 2...")
-            break
-"""
+    opcao = int(input("\nMenu\n(1) Inserir chave\n(2) Deletar chave\n(3) Visualizar árvore\n(4) Sair\nDigite uma opção: "))
