@@ -81,88 +81,63 @@ class ArvoreAVL:
 			separador = ' ' * int(len(separador) / 2)
 
 		return output
-				
-	def inserir(self, chave):
+
+	def inserir(self, chave, nodo_atual):
 		if self.raiz == None:
 			self.raiz = Nodo(chave)
 
 		else:
-			self._inserir(chave, self.raiz)
+			if chave < nodo_atual.chave:
+				if nodo_atual.filho_esquerda == None:
+					nodo_atual.filho_esquerda = Nodo(chave)
+					nodo_atual.filho_esquerda.pai = nodo_atual
 
-	def _inserir(self, chave, nodo_atual):
-		if chave < nodo_atual.chave:
-			if nodo_atual.filho_esquerda == None:
-				nodo_atual.filho_esquerda = Nodo(chave)
-				nodo_atual.filho_esquerda.pai = nodo_atual 
+					self.inspecionar_insercao(nodo_atual.filho_esquerda)
 
-				self.inspecionar_insercao(nodo_atual.filho_esquerda)
+				else:
+					self.inserir(chave, nodo_atual.filho_esquerda)
+
+			elif chave > nodo_atual.chave:
+				if nodo_atual.filho_direita == None:
+					nodo_atual.filho_direita = Nodo(chave)
+					nodo_atual.filho_direita.pai = nodo_atual
+
+					self.inspecionar_insercao(nodo_atual.filho_direita)
+
+				else: 
+					self.inserir(chave, nodo_atual.filho_direita)
 
 			else:
-				self._inserir(chave, nodo_atual.filho_esquerda)
+				print("Chave já está na árvore!")
 
-		elif chave > nodo_atual.chave:
-			if nodo_atual.filho_direita == None:
-				nodo_atual.filho_direita = Nodo(chave)
-				nodo_atual.filho_direita.pai = nodo_atual
-
-				self.inspecionar_insercao(nodo_atual.filho_direita)
-
-			else:
-				self._inserir(chave, nodo_atual.filho_direita)
-
-		else:
-			print("Chave já está na árvore!")
-
-	def info(self):
-		if self.raiz != None: 
-			self._info(self.raiz)
+	def info(self, nodo_atual):
+		if self.raiz != None:
+			if nodo_atual != None:
+				self.info(nodo_atual.filho_esquerda)
+				print('Chave: %s, altura: %d, pai: %s, filho à esquerda: %s, filho à direita: %s' % (str(nodo_atual.chave), nodo_atual.altura, str(nodo_atual.get_pai()), str(nodo_atual.get_filho_esquerdo()), str(nodo_atual.get_filho_direito())))
+				self.info(nodo_atual.filho_direita)
 
 		else:
 			print("Informação indisponível!")
 
-	def _info(self, nodo_atual):
-		if nodo_atual != None: 
-			self._info(nodo_atual.filho_esquerda)
-			print('Chave: %s, altura: %d, pai: %s, filho à esquerda: %s, filho à direita: %s' % (str(nodo_atual.chave), nodo_atual.altura, str(nodo_atual.get_pai()), str(nodo_atual.get_filho_esquerdo()), str(nodo_atual.get_filho_direito())))
-			self._info(nodo_atual.filho_direita)
-
-	def altura(self):
-		if self.raiz != None: 
-			return self._altura(self.raiz, 0)
+	def encontrar(self, chave, nodo_atual):
+		if self.raiz != None:
+			if chave == nodo_atual.chave:
+				return nodo_atual
+			
+			elif chave < nodo_atual.chave and nodo_atual.filho_esquerda != None:
+				return self.encontrar(chave, nodo_atual.filho_esquerda)
+			
+			elif chave > nodo_atual.chave and nodo_atual.filho_direita != None:
+				return self.encontrar(chave, nodo_atual.filho_direita)
 		
-		else:
-			return 0
-
-	def _altura(self, nodo_atual, altura_atual):
-		if nodo_atual == None: return altura_atual
-
-		altura_esquerda = self._altura(nodo_atual.filho_esquerda, altura_atual + 1)
-		altura_direita = self._altura(nodo_atual.filho_direita, altura_atual + 1)
-
-		return max(altura_esquerda, altura_direita)
-
-	def encontrar(self, chave):
-		if self.raiz != None: 
-			return self._encontrar(chave, self.raiz)
-		
-		else:
-			return None
-
-	def _encontrar(self, chave, nodo_atual):
-		if chave == nodo_atual.chave:
-			return nodo_atual
-		
-		elif chave < nodo_atual.chave and nodo_atual.filho_esquerda != None: 
-			return self._encontrar(chave, nodo_atual.filho_esquerda)
-		
-		elif chave > nodo_atual.chave and nodo_atual.filho_direita != None: 
-			return self._encontrar(chave, nodo_atual.filho_direita)
-
+		return None
+ 
 	def deletar(self, chave):
-		return self._deletar(self.encontrar(chave))
+		return self._deletar(self.encontrar(chave, self.raiz))
 
 	def _deletar(self, nodo):
-		if nodo == None or self.encontrar(nodo.chave) == None:
+		if nodo == None or self.encontrar(nodo.chave, self.raiz) == None:
 			print("Chave a ser excluída não encontrada na árvore!")
 
 			return None 
@@ -221,9 +196,7 @@ class ArvoreAVL:
 		# Caso 3 (nodo possui 2 filhos)
 		if nodos_filhos == 2:
 			sucessor = nodo_chave_minima(nodo.filho_direita)
-
 			nodo.chave = sucessor.chave
-
 			self._deletar(sucessor)
 
 			return
@@ -234,23 +207,17 @@ class ArvoreAVL:
 			# Percorre a árvore de volta verificando se existe qualquer desbalanceamento na árvore
 			self.inspecionar_exclusao(nodo_pai)
 
-	def procurar(self, chave):
-		if self.raiz != None: 
-			return self._procurar(chave, self.raiz)
-		
-		else:
-			return False
+	def procurar(self, chave, nodo_atual):
+		if self.raiz != None:
+			if chave == nodo_atual.chave:
+				return True
+			
+			elif chave < nodo_atual.chave and nodo_atual.filho_esquerda != None:
+				return self.procurar(chave, nodo_atual.filho_esquerda)
+			
+			elif chave > nodo_atual.chave and nodo_atual.filho_direita != None:
+				return self.procurar(chave, nodo_atual.filho_direita)
 
-	def _procurar(self, chave, nodo_atual):
-		if chave == nodo_atual.chave:
-			return True
-		
-		elif chave < nodo_atual.chave and nodo_atual.filho_esquerda != None: 
-			return self._procurar(chave, nodo_atual.filho_esquerda)
-		
-		elif chave > nodo_atual.chave and nodo_atual.filho_direita != None: 
-			return self._procurar(chave,nodo_atual.filho_direita)
-		
 		return False 
 
 	def inspecionar_insercao(self, nodo_atual, caminho=[]):
@@ -393,7 +360,7 @@ while opcao.isdigit():
 		chaveInserir = input("Chave que deseja inserir: ")
 
 		if chaveInserir.isdigit():
-			arvore_AVL.inserir(int(chaveInserir))
+			arvore_AVL.inserir(int(chaveInserir), arvore_AVL.__getattribute__("raiz"))
 
 		else:
 			print("A chave deve ser do tipo inteiro!")
@@ -414,13 +381,13 @@ while opcao.isdigit():
 		chaveProcurar = input("Chave que deseja procurar: ")
 
 		if chaveProcurar.isdigit():
-			print("Nodo encontrado!") if arvore_AVL.procurar(int(chaveProcurar)) == True else print("Nodo não encontrado!")
+			print("Nodo encontrado!") if arvore_AVL.procurar(int(chaveProcurar), arvore_AVL.__getattribute__("raiz")) == True else print("Nodo não encontrado!")
 
 		else:
 			print("A chave deve ser do tipo inteiro!")
 
 	elif int(opcao) == 5:
-		arvore_AVL.info()
+		arvore_AVL.info(arvore_AVL.__getattribute__("raiz"))
 		print("\nPré-ordem:")
 		arvore_AVL.pre_ordem(arvore_AVL.raiz)
 		print("\nPós-ordem:")
@@ -428,7 +395,7 @@ while opcao.isdigit():
 		print("\nEm-ordem:")
 		arvore_AVL.em_ordem(arvore_AVL.raiz)
 
-	else:
+	else: 
 		break
 
 	opcao = input("\nMenu\n(1) Inserir chave\n(2) Deletar chave\n(3) Visualizar árvore\n(4) Procurar chave\n(5) Informações\nDigite outra tecla para sair\nDigite uma opção: ")
