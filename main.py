@@ -1,7 +1,9 @@
+from datetime import datetime
 from readerCSV import ReaderCSV
+from verificaData import formato_data_correto
 
 class Nodo:
-	def __init__(self, objeto, chave=None):
+	def __init__(self, objeto, chave):
 		self.objeto = objeto
 		self.chave = chave
 		self.filho_esquerda = None
@@ -85,30 +87,30 @@ class ArvoreAVL:
 
 		return output
 
-	def inserir(self, chave, nodo_atual, objeto=None):
+	def inserir(self, chave, nodo_atual, objeto):
 		if self.raiz == None:
 			self.raiz = Nodo(objeto, chave)
 
 		else:
 			if chave < nodo_atual.chave:
 				if nodo_atual.filho_esquerda == None:
-					nodo_atual.filho_esquerda = Nodo(chave)
+					nodo_atual.filho_esquerda = Nodo(objeto, chave)
 					nodo_atual.filho_esquerda.pai = nodo_atual
 
 					self.inspecionar_insercao(nodo_atual.filho_esquerda)
 
 				else:
-					self.inserir(chave, nodo_atual.filho_esquerda)
+					self.inserir(chave, nodo_atual.filho_esquerda, objeto)
 
 			elif chave > nodo_atual.chave:
 				if nodo_atual.filho_direita == None:
-					nodo_atual.filho_direita = Nodo(chave)
+					nodo_atual.filho_direita = Nodo(objeto, chave)
 					nodo_atual.filho_direita.pai = nodo_atual
 
 					self.inspecionar_insercao(nodo_atual.filho_direita)
 
 				else: 
-					self.inserir(chave, nodo_atual.filho_direita)
+					self.inserir(chave, nodo_atual.filho_direita, objeto)
 
 			else:
 				print("Chave já está na árvore!")
@@ -122,6 +124,33 @@ class ArvoreAVL:
 
 		else:
 			print("Informação indisponível!")
+
+	def get_objeto_por_data_menor_igual_a(self, data, nodo_atual):
+		if self.raiz != None:
+			if nodo_atual != None:
+				data_nodo = datetime.strptime(nodo_atual.objeto.nascimento, '%d/%m/%Y')
+				data_input = datetime.strptime(data, '%d/%m/%Y')
+
+				if data_nodo <= data_input:
+					print(f'\n{nodo_atual.objeto}')
+
+					self.get_objeto_por_data_menor_igual_a(data, nodo_atual.filho_esquerda)
+					self.get_objeto_por_data_menor_igual_a(data, nodo_atual.filho_direita)
+
+		else:
+			print("Pessoas com data menor ou igual à especificada não encontrada!")
+
+	def get_objeto_por_iniciais(self, iniciais, nodo_atual):
+		if self.raiz != None:
+			if nodo_atual != None:
+				if iniciais.lower() in nodo_atual.objeto.nome.lower():
+					print(f'\n{nodo_atual.objeto}')
+
+				self.get_objeto_por_iniciais(iniciais, nodo_atual.filho_esquerda)
+				self.get_objeto_por_iniciais(iniciais, nodo_atual.filho_direita)
+
+		else:
+			print("Pessoas com as iniciais informadas não encontradas!")
 
 	def encontrar(self, chave, nodo_atual):
 		if self.raiz != None:
@@ -209,19 +238,6 @@ class ArvoreAVL:
 
 			# Percorre a árvore de volta verificando se existe qualquer desbalanceamento na árvore
 			self.inspecionar_exclusao(nodo_pai)
-
-	def procurar(self, chave, nodo_atual):
-		if self.raiz != None:
-			if chave == nodo_atual.chave:
-				return True
-			
-			elif chave < nodo_atual.chave and nodo_atual.filho_esquerda != None:
-				return self.procurar(chave, nodo_atual.filho_esquerda)
-			
-			elif chave > nodo_atual.chave and nodo_atual.filho_direita != None:
-				return self.procurar(chave, nodo_atual.filho_direita)
-
-		return False 
 
 	def inspecionar_insercao(self, nodo_atual, caminho=[]):
 		if nodo_atual.pai == None: return
@@ -335,24 +351,6 @@ class ArvoreAVL:
 		direita = self.get_altura(nodo_atual.filho_direita)
 
 		return nodo_atual.filho_esquerda if esquerda>=direita else nodo_atual.filho_direita
-	
-	def pre_ordem(self, nodo_atual):
-		if nodo_atual is not None:
-			print(nodo_atual.chave, end=" ")
-			self.pre_ordem(nodo_atual.filho_esquerda)
-			self.pre_ordem(nodo_atual.filho_direita)
-
-	def pos_ordem(self, nodo_atual):
-		if nodo_atual is not None:
-			self.pos_ordem(nodo_atual.filho_esquerda)
-			self.pos_ordem(nodo_atual.filho_direita)
-			print(nodo_atual.chave, end=" ")
-
-	def em_ordem(self, nodo_atual):
-		if nodo_atual is not None:
-			self.em_ordem(nodo_atual.filho_esquerda)
-			print(nodo_atual.chave, end=" ")
-			self.em_ordem(nodo_atual.filho_direita)
 		
 dadosPessoas = ReaderCSV().getDados()
 
@@ -361,53 +359,41 @@ arvore_AVL_por_nome = ArvoreAVL()
 arvore_AVL_por_nascimento = ArvoreAVL()
 
 for pessoa in dadosPessoas:
-	arvore_AVL_por_CPF.inserir(pessoa.cpf, arvore_AVL_por_CPF.__getattribute__("raiz"))
-	arvore_AVL_por_nome.inserir(pessoa.nome, arvore_AVL_por_nome.__getattribute__("raiz"))
-	arvore_AVL_por_nascimento.inserir(pessoa.nascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"))
+	arvore_AVL_por_CPF.inserir(pessoa.cpf, arvore_AVL_por_CPF.__getattribute__("raiz"), pessoa)
+	arvore_AVL_por_nome.inserir(pessoa.nome, arvore_AVL_por_nome.__getattribute__("raiz"), pessoa)
+	arvore_AVL_por_nascimento.inserir(pessoa.nascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"), pessoa)
 
-opcao = input("\nMenu\n(1) Consultar pessoa por CPF\n(2) Consultar pessoas por string inicial de nome\n(3) Consultar pessoas por datas de nascimento menores ou iguais\nDigite outra tecla para sair\nDigite uma opção: ")
+opcao = input("\nMenu\n(1) Consultar pessoa por CPF\n(2) Consultar pessoas por string inicial de nome\n(3) Consultar pessoas por data de nascimento menor ou igual\nDigite outra tecla para sair\nDigite uma opção: ")
 
 while opcao.isdigit():
 	if int(opcao) == 1:
 		cpfInserir = input("CPF que deseja procurar: ")
 
-		if not cpfInserir.isdigit():
-			arvore_AVL_por_CPF.encontrar(cpfInserir, arvore_AVL_por_CPF)
+		if cpfInserir.isdigit():
+			print(f'\n{arvore_AVL_por_CPF.encontrar(cpfInserir, arvore_AVL_por_CPF.__getattribute__("raiz")).objeto}')
 
 		else:
-			print("O CPF deve ser do tipo string!")
+			print("O CPF deve ser do tipo numérico!")
 
 	elif int(opcao) == 2:
-		chaveDeletar = input("Chave que deseja deletar: ")
-
-		if chaveDeletar.isdigit():
-			arvore_AVL.deletar(int(chaveDeletar))
+		iniciais = input("String inicial para nome: ")
+		
+		if not iniciais.isdigit():
+			arvore_AVL_por_nome.get_objeto_por_iniciais(iniciais, arvore_AVL_por_nome.__getattribute__("raiz"))
 
 		else:
-			print("A chave deve ser do tipo inteiro!")
+			print("Formato de string inválido!")
 
 	elif int(opcao) == 3:
-		print(arvore_AVL.__repr__())	
+		dataNascimento = input("Data de nascimento menor ou igual a (DD/MM/AAAA): ")
 
-	elif int(opcao) == 4:
-		chaveProcurar = input("Chave que deseja procurar: ")
-
-		if chaveProcurar.isdigit():
-			print("Nodo encontrado!") if arvore_AVL.procurar(int(chaveProcurar), arvore_AVL.__getattribute__("raiz")) == True else print("Nodo não encontrado!")
+		if formato_data_correto(dataNascimento):
+			arvore_AVL_por_nascimento.get_objeto_por_data_menor_igual_a(dataNascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"))
 
 		else:
-			print("A chave deve ser do tipo inteiro!")
-
-	elif int(opcao) == 5:
-		arvore_AVL.info(arvore_AVL.__getattribute__("raiz"))
-		print("\nPré-ordem:")
-		arvore_AVL.pre_ordem(arvore_AVL.raiz)
-		print("\nPós-ordem:")
-		arvore_AVL.pos_ordem(arvore_AVL.raiz)
-		print("\nEm-ordem:")
-		arvore_AVL.em_ordem(arvore_AVL.raiz)
+			print("Formato de data inválido!")
 
 	else: 
 		break
 
-	opcao = input("\nMenu\n(1) Inserir chave\n(2) Deletar chave\n(3) Visualizar árvore\n(4) Procurar chave\n(5) Informações\nDigite outra tecla para sair\nDigite uma opção: ")
+	opcao = input("\nMenu\n(1) Consultar pessoa por CPF\n(2) Consultar pessoas por string inicial de nome\n(3) Consultar pessoas por data de nascimento menor ou igual\nDigite outra tecla para sair\nDigite uma opção: ")
