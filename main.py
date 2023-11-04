@@ -1,5 +1,8 @@
+from readerCSV import ReaderCSV
+
 class Nodo:
-	def __init__(self, chave=None):
+	def __init__(self, objeto, chave=None):
+		self.objeto = objeto
 		self.chave = chave
 		self.filho_esquerda = None
 		self.filho_direita = None
@@ -82,9 +85,9 @@ class ArvoreAVL:
 
 		return output
 
-	def inserir(self, chave, nodo_atual):
+	def inserir(self, chave, nodo_atual, objeto=None):
 		if self.raiz == None:
-			self.raiz = Nodo(chave)
+			self.raiz = Nodo(objeto, chave)
 
 		else:
 			if chave < nodo_atual.chave:
@@ -351,19 +354,28 @@ class ArvoreAVL:
 			print(nodo_atual.chave, end=" ")
 			self.em_ordem(nodo_atual.filho_direita)
 		
-arvore_AVL = ArvoreAVL()
+dadosPessoas = ReaderCSV().getDados()
 
-opcao = input("\nMenu\n(1) Inserir chave\n(2) Deletar chave\n(3) Visualizar árvore\n(4) Procurar chave\n(5) Informações\nDigite outra tecla para sair\nDigite uma opção: ")
+arvore_AVL_por_CPF = ArvoreAVL()
+arvore_AVL_por_nome = ArvoreAVL()
+arvore_AVL_por_nascimento = ArvoreAVL()
+
+for pessoa in dadosPessoas:
+	arvore_AVL_por_CPF.inserir(pessoa.cpf, arvore_AVL_por_CPF.__getattribute__("raiz"))
+	arvore_AVL_por_nome.inserir(pessoa.nome, arvore_AVL_por_nome.__getattribute__("raiz"))
+	arvore_AVL_por_nascimento.inserir(pessoa.nascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"))
+
+opcao = input("\nMenu\n(1) Consultar pessoa por CPF\n(2) Consultar pessoas por string inicial de nome\n(3) Consultar pessoas por datas de nascimento menores ou iguais\nDigite outra tecla para sair\nDigite uma opção: ")
 
 while opcao.isdigit():
 	if int(opcao) == 1:
-		chaveInserir = input("Chave que deseja inserir: ")
+		cpfInserir = input("CPF que deseja procurar: ")
 
-		if chaveInserir.isdigit():
-			arvore_AVL.inserir(int(chaveInserir), arvore_AVL.__getattribute__("raiz"))
+		if not cpfInserir.isdigit():
+			arvore_AVL_por_CPF.encontrar(cpfInserir, arvore_AVL_por_CPF)
 
 		else:
-			print("A chave deve ser do tipo inteiro!")
+			print("O CPF deve ser do tipo string!")
 
 	elif int(opcao) == 2:
 		chaveDeletar = input("Chave que deseja deletar: ")
