@@ -1,11 +1,20 @@
-from datetime import datetime
+import csv
+from pessoa import Pessoa
 
-#usada para validar se uma string de data está no formato 'dia/mês/ano'.
-def formato_data_correto(data):
-  try:
-    datetime.strptime(data, '%d/%m/%Y')
+class ReaderCSV:
+    def __init__(self):
+        with open('pessoas.csv', newline='') as f:
+            reader = csv.DictReader(f, delimiter=';')
 
-    return True
-  
-  except ValueError:
-    return False
+            dados = []
+
+            for row in reader:
+                dado = Pessoa(row['cpf'], row['rg'], row['nome'], row['nascimento'], row['cidade'])
+                dados.append(dado)
+
+            self.dados = dados
+
+    def getDados(self):
+        return self.dados
+    
+
