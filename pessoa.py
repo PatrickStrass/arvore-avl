@@ -1,20 +1,33 @@
 from datetime import datetime
 
+from verificaData import formato_data_correto
+
 class Pessoa:
+
     def __init__(self, cpf, rg, nome, nascimento, cidade):
         self.cpf = cpf
         self.rg = rg
-        self.nome = nome
+        self.nome = nome   
+        self.nascimento = nascimento
         self.cidade = cidade
-        self.nascimento = nascimento    
-        
-    def from_date(pessoaInfo, cpf, rg, nome, cidade, ano, mes, dia, nascimento):
-        nascimento=datetime(dia, mes, ano)
-        return pessoaInfo(cpf, rg, nome, cidade, nascimento)
-    
-    def __str__(self):
-        return f"CPF: {self.__getattribute__('cpf')}\n" f"RG: {self.__getattribute__('rg')}\n" f"Nome: {self.__getattribute__('nome')}\n" f"Cidade: {self.__getattribute__('cidade')}\n" f"Data Nascimento: {self.__getattribute__('nascimento')}"
+         
+    @classmethod
+    def from_date(cls, cpf, rg, nome, cidade, dia, mes, ano):
+        data_str = f"{dia}/{mes}/{ano}"  # Cria uma string no formato 'dd/mm/yyyy'
+        if formato_data_correto(data_str):
+            nascimento = datetime.strptime(data_str, '%d/%m/%Y')
+            return cls(cpf, rg, nome, nascimento, cidade)
+        else:
+            raise ValueError(f"A data {data_str} não está no formato correto.")
 
+    def __str__(self):
+        return (
+            f"CPF: {self.cpf}\n"
+            f"RG: {self.rg}\n"
+            f"Nome: {self.nome}\n"
+            f"Data Nascimento: {self.nascimento}\n"
+            f"Cidade: {self.cidade}"
+        )
 # Criando e printando pessoa
 #pessoa = Pessoa(12345678901, 9876543210, "João", "Brasil", datetime(1990, 5, 15))
 #print(pessoa)
