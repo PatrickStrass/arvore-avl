@@ -14,9 +14,5 @@ class ReaderCSV:
 
             self.dados = dados
 
-        # Teste print pessoas
-        # for pessoa in pessoas:
-        #     print(pessoa)
-
     def getDados(self):
         return self.dados
