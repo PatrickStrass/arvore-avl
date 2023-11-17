@@ -29,6 +29,7 @@ class Nodo:
 class ArvoreAVL:
 	def __init__(self):
 		self.raiz = None
+		self.verificar = False
 
 	def __repr__(self):
 		if self.raiz == None: return 'A árvore está vazia!'
@@ -87,6 +88,37 @@ class ArvoreAVL:
 
 		return output
 
+	def inserir_data(self, chave, nodo_atual, objeto):
+		if self.raiz == None:
+			self.raiz = Nodo(objeto, chave)
+
+		else:
+			chave_data = datetime.strptime(chave, '%d/%m/%Y')
+			nodo_atual_data = datetime.strptime(nodo_atual.chave, '%d/%m/%Y')
+
+			if chave_data.date() < nodo_atual_data.date():
+				if nodo_atual.filho_esquerda == None:
+					nodo_atual.filho_esquerda = Nodo(objeto, chave)
+					nodo_atual.filho_esquerda.pai = nodo_atual
+
+					self.inspecionar_insercao(nodo_atual.filho_esquerda)
+
+				else:
+					self.inserir_data(chave, nodo_atual.filho_esquerda, objeto)
+
+			elif chave_data.date() > nodo_atual_data.date():
+				if nodo_atual.filho_direita == None:
+					nodo_atual.filho_direita = Nodo(objeto, chave)
+					nodo_atual.filho_direita.pai = nodo_atual
+
+					self.inspecionar_insercao(nodo_atual.filho_direita)
+
+				else: 
+					self.inserir_data(chave, nodo_atual.filho_direita, objeto)
+
+			else:
+				print("Chave já está na árvore!")
+
 	def inserir(self, chave, nodo_atual, objeto):
 		if self.raiz == None:
 			self.raiz = Nodo(objeto, chave)
@@ -131,26 +163,32 @@ class ArvoreAVL:
 				data_nodo = datetime.strptime(nodo_atual.objeto.nascimento, '%d/%m/%Y')
 				data_input = datetime.strptime(data, '%d/%m/%Y')
 
-				if data_nodo <= data_input:
+				if data_nodo.date() <= data_input.date():
 					print(f'\n{nodo_atual.objeto}')
+					self.verificar = True
 
 					self.get_objeto_por_data_menor_igual_a(data, nodo_atual.filho_esquerda)
 					self.get_objeto_por_data_menor_igual_a(data, nodo_atual.filho_direita)
 
+				else:
+					self.get_objeto_por_data_menor_igual_a(data, nodo_atual.filho_esquerda)
+
 		else:
-			print("Pessoas com data menor ou igual à especificada não encontrada!")
+			print("Árvore AVL está vazia!")
+		
+		return self.verificar
 
 	def get_objeto_por_iniciais(self, iniciais, nodo_atual):
 		if self.raiz != None:
 			if nodo_atual != None:
 				if iniciais.lower() in nodo_atual.objeto.nome.lower():
 					print(f'\n{nodo_atual.objeto}')
+					self.verificar = True
 
 				self.get_objeto_por_iniciais(iniciais, nodo_atual.filho_esquerda)
 				self.get_objeto_por_iniciais(iniciais, nodo_atual.filho_direita)
 
-		else:
-			print("Pessoas com as iniciais informadas não encontradas!")
+		return self.verificar
 
 	def encontrar(self, chave, nodo_atual):
 		if self.raiz != None:
@@ -361,7 +399,7 @@ arvore_AVL_por_nascimento = ArvoreAVL()
 for pessoa in dadosPessoas:
 	arvore_AVL_por_CPF.inserir(pessoa.cpf, arvore_AVL_por_CPF.__getattribute__("raiz"), pessoa)
 	arvore_AVL_por_nome.inserir(pessoa.nome, arvore_AVL_por_nome.__getattribute__("raiz"), pessoa)
-	arvore_AVL_por_nascimento.inserir(pessoa.nascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"), pessoa)
+	arvore_AVL_por_nascimento.inserir_data(pessoa.nascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"), pessoa)
 
 opcao = input("\nMenu\n(1) Consultar pessoa por CPF\n(2) Consultar pessoas por string inicial de nome\n(3) Consultar pessoas por data de nascimento menor ou igual\nDigite outra tecla para sair\nDigite uma opção: ")
 
@@ -370,8 +408,11 @@ while opcao.isdigit():
 		cpfInserir = input("CPF que deseja procurar: ")
 
 		if cpfInserir.isdigit():
-			print(f'\n{arvore_AVL_por_CPF.encontrar(cpfInserir, arvore_AVL_por_CPF.__getattribute__("raiz")).objeto}')
-
+			resultado = arvore_AVL_por_CPF.encontrar(cpfInserir, arvore_AVL_por_CPF.raiz)
+			if resultado is not None:
+				print(f'\n{resultado.objeto}')
+			else:
+				print("CPF não encontrado.")
 		else:
 			print("O CPF deve ser do tipo numérico!")
 
@@ -379,8 +420,9 @@ while opcao.isdigit():
 		iniciais = input("String inicial para nome: ")
 		
 		if not iniciais.isdigit():
-			arvore_AVL_por_nome.get_objeto_por_iniciais(iniciais, arvore_AVL_por_nome.__getattribute__("raiz"))
-
+			resultado = arvore_AVL_por_nome.get_objeto_por_iniciais(iniciais, arvore_AVL_por_nome.raiz)
+			if not resultado:
+				print("Pessoas com as iniciais informadas não encontradas.")
 		else:
 			print("Formato de string inválido!")
 
@@ -388,8 +430,9 @@ while opcao.isdigit():
 		dataNascimento = input("Data de nascimento menor ou igual a (DD/MM/AAAA): ")
 
 		if formato_data_correto(dataNascimento):
-			arvore_AVL_por_nascimento.get_objeto_por_data_menor_igual_a(dataNascimento, arvore_AVL_por_nascimento.__getattribute__("raiz"))
-
+			resultado = arvore_AVL_por_nascimento.get_objeto_por_data_menor_igual_a(dataNascimento, arvore_AVL_por_nascimento.raiz)
+			if not resultado:
+				print("Nenhuma pessoa com a data exata ou anterior encontrada.")
 		else:
 			print("Formato de data inválido!")
 
